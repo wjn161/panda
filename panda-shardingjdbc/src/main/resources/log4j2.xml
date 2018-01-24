@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status="WARN" monitorInterval="300">
+    <Appenders>
+        <Console name="Console" target="SYSTEM_OUT" follow="true">
+            <PatternLayout>
+                <pattern>[%-5p][%d{yyyy-MM-dd HH:mm:ss,SSS}][%C{1}:%L] %m%n</pattern>
+            </PatternLayout>
+        </Console>
+        <RollingFile name="RollingFile" fileName="${sys:user.home}/logs/panda/panda-shardingjdbc.log"
+                     filePattern="${sys:user.home}/logs/panda/panda-shardingjdbc.%d{yyyyMMdd}.log" append="true">
+            <PatternLayout>
+                <pattern>[%-5p][%d{yyyy-MM-dd HH:mm:ss,SSS}][%C{1}:%L] %m%n</pattern>
+            </PatternLayout>
+            <Policies>
+                <TimeBasedTriggeringPolicy interval="1" modulate="true" />
+            </Policies>
+        </RollingFile>
+        <RollingFile name="ErrorRollingFile" fileName="${sys:user.home}/logs/panda/panda-shardingjdbc-error.log"
+                     filePattern="${sys:user.home}/logs/panda/panda-shardingjdbc-error.%d{yyyyMMdd}.log" append="true">
+            <ThresholdFilter level="ERROR" onMatch="ACCEPT" onMismatch="DENY"/>
+            <PatternLayout>
+                <pattern>[%-5p][%d{yyyy-MM-dd HH:mm:ss,SSS}][%C{1}:%L] %m%n</pattern>
+            </PatternLayout>
+            <Policies>
+                <TimeBasedTriggeringPolicy interval="1" modulate="true" />
+            </Policies>
+        </RollingFile>
+    </Appenders>
+    <Loggers>
+        <!-- SQL调试日志在本地调试可以打开，但是不能提交到服务器-->
+        <!--<logger name="druid.sql.Statement" level="debug" additivity="false">-->
+        <!--<appender-ref ref="Console"/>-->
+        <!--</logger>-->
+        <!--<logger name="druid.sql.ResultSet" level="debug" additivity="false">-->
+        <!--<appender-ref ref="Console"/>-->
+        <!--</logger>-->
+        <AsyncRoot level="INFO" includeLocation="true">
+            <AppenderRef ref="RollingFile"/>
+            <AppenderRef ref="Console"/>
+            <AppenderRef ref="ErrorRollingFile"/>
+        </AsyncRoot>
+    </Loggers>
+</Configuration>
