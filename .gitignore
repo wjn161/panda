@@ -7,3 +7,5 @@ target/
 release/
 disconf/
 *rebel.xml
+*~
+.DS_Store
