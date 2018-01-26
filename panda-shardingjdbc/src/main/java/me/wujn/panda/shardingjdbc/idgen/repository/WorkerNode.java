@@ -2,7 +2,7 @@
  * Zentech-Inc
  * Copyright (C) 2018 All Rights Reserved.
  */
-package me.wujn.panda.shardingjdbc.idgen.worker;
+package me.wujn.panda.shardingjdbc.idgen.repository;
 
 import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
@@ -16,9 +16,9 @@ import java.util.Date;
  */
 public class WorkerNode implements Serializable {
     private static final long serialVersionUID = 8838477449259913091L;
-    private String workerId;
+    private Long workerId;
     private String hostName;
-    private String port;
+    private String appName;
     private Date modified;
     private Date created;
 
@@ -27,7 +27,7 @@ public class WorkerNode implements Serializable {
      *
      * @return property value of workerId
      */
-    public String getWorkerId() {
+    public Long getWorkerId() {
         return workerId;
     }
 
@@ -36,7 +36,7 @@ public class WorkerNode implements Serializable {
      *
      * @param workerId value to be assigned to property workerId
      */
-    public void setWorkerId(String workerId) {
+    public void setWorkerId(Long workerId) {
         this.workerId = workerId;
     }
 
@@ -59,21 +59,21 @@ public class WorkerNode implements Serializable {
     }
 
     /**
-     * Getter method for property <tt>port</tt>.
+     * Getter method for property <tt>appName</tt>.
      *
-     * @return property value of port
+     * @return property value of appName
      */
-    public String getPort() {
-        return port;
+    public String getAppName() {
+        return appName;
     }
 
     /**
-     * Setter method for property <tt>port</tt>.
+     * Setter method for property <tt>appName</tt>.
      *
-     * @param port value to be assigned to property port
+     * @param appName value to be assigned to property appName
      */
-    public void setPort(String port) {
-        this.port = port;
+    public void setAppName(String appName) {
+        this.appName = appName;
     }
 
     /**
@@ -116,4 +116,5 @@ public class WorkerNode implements Serializable {
     public String toString() {
         return ReflectionToStringBuilder.reflectionToString(this, ToStringStyle.SHORT_PREFIX_STYLE);
     }
+
 }

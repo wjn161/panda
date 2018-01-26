@@ -17,6 +17,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
 
+import java.text.MessageFormat;
 import java.util.Date;
 import java.util.concurrent.TimeUnit;
 
@@ -27,14 +28,14 @@ import java.util.concurrent.TimeUnit;
  * <li> 1. sign: The highest bit is 0 </li>
  * <li> 2. delta seconds: The next 40 bits represents delta seconds since a customer epoch(2018-01-01 00:00:00.000).supports about 34 years
  * until to 2052-01-01 00:00:00</li>
- * <li> 3. worker node id: The next 10 bits represents 1024 worker nodes per business unit</li>
- * <li> 4. sequence: The next 13 bits represents a sequence within the same second, max for 8192/ms </li>
+ * <li> 3. worker node id: The next 12 bits represents 4096 worker nodes per business unit</li>
+ * <li> 4. sequence: The next 11 bits represents a sequence within the same second, max for 4096/ms </li>
  * </ul>
  * <pre>{@code
  * +------+---------------+--------+--------------
  * | sign | delta seconds | worker id | sequence |
  * +------+---------------+--------+--------------
- * | 1bit |     40bits    |   10bits  |  13bits  |
+ * | 1bit |     40bits    |   12bits  |  11bits  |
  * +------+----------------------+----------------
  * }</pre>
  *
@@ -48,8 +49,8 @@ public class DefaultIdGenerator implements IdGenerator, InitializingBean {
      * Bits allocate
      */
     protected short timeBits = 40;
-    protected short workerBits = 10;
-    protected short seqBits = 13;
+    protected short workerBits = 12;
+    protected short seqBits = 11;
 
     /**
      * Customer epoch, unit as second. For example 2018-01-01 (ms: 1514736000000L)
@@ -75,7 +76,7 @@ public class DefaultIdGenerator implements IdGenerator, InitializingBean {
     protected WorkerIdAssigner workerIdAssigner;
 
     @Override
-    public long getId() throws IdGenerateException {
+    public Long getId() throws IdGenerateException {
         try {
             return nextId();
         } catch (Exception e) {
@@ -108,37 +109,36 @@ public class DefaultIdGenerator implements IdGenerator, InitializingBean {
         bitsAllocator = new BitsAllocator(timeBits, workerBits, seqBits);
         workerId = workerIdAssigner.assignWorkerId();
         if (workerId > bitsAllocator.getMaxWorkerId()) {
-            workerIdAssigner.resetWorkerId();
-            workerId = workerIdAssigner.assignWorkerId();
+            throw new IdGenerateException(MessageFormat.format("worker id is illegal,workerid={0},max workerId={1}",
+                    workerId, bitsAllocator.getMaxWorkerId()));
         }
         LOGGER.info("init bits(1,{},{},{})", timeBits, workerBits, seqBits);
     }
 
-    private synchronized long nextId() {
-        long currentSecond = getCurrentSecond();
+    private synchronized Long nextId() {
+        long currentMillSeconds = getCurrentMillSeconds();
         // Clock moved backwards, refuse to generate uid
-        if (currentSecond < lastSecond) {
-            long refusedSeconds = lastSecond - currentSecond;
+        if (currentMillSeconds < lastSecond) {
+            long refusedSeconds = lastSecond - currentMillSeconds;
             throw new IdGenerateException("Clock moved backwards. Refusing for %d seconds", refusedSeconds);
         }
-
         // At the same second, increase sequence
-        if (currentSecond == lastSecond) {
+        if (currentMillSeconds == lastSecond) {
             sequence = (sequence + 1) & bitsAllocator.getMaxSequence();
             // Exceed the max sequence, we wait the next second to generate uid
             if (sequence == 0) {
-                currentSecond = getNextSecond(lastSecond);
+                currentMillSeconds = getNextMillSeconds(lastSecond);
             }
-            // At the different second, sequence restart from a random number betwenn 0 from 9
+            // At the different millsecond, sequence restart from a random number betwenn 0 from 9
         } else {
             sequence = RandomUtils.nextLong(0, 9);
         }
-        lastSecond = currentSecond;
+        lastSecond = currentMillSeconds;
         // Allocate bits for ID
-        return bitsAllocator.allocate(currentSecond - epochSeconds, workerId, sequence);
+        return bitsAllocator.allocate(currentMillSeconds - epochSeconds, workerId, sequence);
     }
 
-    private long getCurrentSecond() {
+    private long getCurrentMillSeconds() {
         long currentSecond = SystemClock.millisClock().now();
         if (currentSecond - epochSeconds > bitsAllocator.getMaxDeltaSeconds()) {
             throw new IdGenerateException("Timestamp bits is exhausted. Refusing UID generate. Now: " + currentSecond);
@@ -146,10 +146,10 @@ public class DefaultIdGenerator implements IdGenerator, InitializingBean {
         return currentSecond;
     }
 
-    private long getNextSecond(long lastTimestamp) {
-        long timestamp = getCurrentSecond();
+    private long getNextMillSeconds(long lastTimestamp) {
+        long timestamp = getCurrentMillSeconds();
         while (timestamp <= lastTimestamp) {
-            timestamp = getCurrentSecond();
+            timestamp = getCurrentMillSeconds();
         }
         return timestamp;
     }
@@ -204,8 +204,4 @@ public class DefaultIdGenerator implements IdGenerator, InitializingBean {
         }
     }
 
-    public static void main(String[] args) {
-        DefaultIdGenerator defaultIdGenerator = new DefaultIdGenerator();
-        System.out.println(defaultIdGenerator.nextId());
-    }
 }

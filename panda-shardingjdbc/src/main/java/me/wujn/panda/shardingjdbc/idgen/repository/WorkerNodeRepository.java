@@ -2,7 +2,7 @@
  * Zentech-Inc
  * Copyright (C) 2018 All Rights Reserved.
  */
-package me.wujn.panda.shardingjdbc.idgen.worker;
+package me.wujn.panda.shardingjdbc.idgen.repository;
 
 /**
  * @author wujn
@@ -10,26 +10,19 @@ package me.wujn.panda.shardingjdbc.idgen.worker;
  */
 public interface WorkerNodeRepository {
     /**
-     * update worker node
-     *
-     * @param workerNode
-     */
-    void update(WorkerNode workerNode);
-
-    /**
      * insert worker node
      *
      * @param workerNode
      */
-    void insert(WorkerNode workerNode);
+    void insert(WorkerNode workerNode) throws Exception;
 
     /**
      * query worker node
      *
      * @param hostName
-     * @param port
+     * @param appName
      * @return
      */
-    WorkerNode get(String hostName, String port);
+    WorkerNode get(String hostName, String appName) throws Exception;
 
 }

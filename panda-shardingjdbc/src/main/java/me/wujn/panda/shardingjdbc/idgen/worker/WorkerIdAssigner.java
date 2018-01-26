@@ -15,9 +15,4 @@ public interface WorkerIdAssigner {
      * @return
      */
     long assignWorkerId();
-
-    /**
-     * reset workerId
-     */
-    void resetWorkerId();
 }
