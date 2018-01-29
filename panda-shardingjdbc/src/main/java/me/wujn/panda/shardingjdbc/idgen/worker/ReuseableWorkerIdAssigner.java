@@ -26,17 +26,6 @@ public class ReuseableWorkerIdAssigner implements WorkerIdAssigner {
 
     @Autowired
     private WorkerNodeRepository workerNodeRepository;
-
-    /**
-     * enable the file cache when get worker id from zookeeper
-     */
-    private Boolean enableFileCache;
-
-    /**
-     * config the file path for the local worker id
-     */
-    private String fileCachePath;
-
     /**
      * default worker id
      */

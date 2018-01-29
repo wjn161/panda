@@ -30,7 +30,6 @@ import static me.wujn.panda.shardingjdbc.idgen.utils.Constants.CACHE_FILE_PATH;
  * @version $Id ZkWorkerNodeRepositoryImpl.java, v 0.1 2018-01-24 16:58 wujn Exp $$
  */
 @Service
-@FileCache(path = CACHE_FILE_PATH)
 public class ZkWorkerNodeRepositoryImpl implements WorkerNodeRepository {
 
     /**
@@ -120,6 +119,7 @@ public class ZkWorkerNodeRepositoryImpl implements WorkerNodeRepository {
         }
     }
 
+    @FileCache
     @SuppressWarnings("unchecked")
     @Override
     public WorkerNode get(String hostName, String appName) throws Exception {

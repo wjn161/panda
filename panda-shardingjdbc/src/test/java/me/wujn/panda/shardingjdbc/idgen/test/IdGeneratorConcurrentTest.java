@@ -28,7 +28,7 @@ import java.util.concurrent.TimeUnit;
  * @version $Id IdGeneratorConcurrentTest.java, v 0.1 2018-01-29 11:04 wujn Exp $$
  */
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(locations = "classpath:spring/spring-context.xml")
+@ContextConfiguration(locations = "classpath:spring/spring.xml")
 public class IdGeneratorConcurrentTest extends TestCase {
     private static final Logger LOGGER = LoggerFactory.getLogger(IdGeneratorConcurrentTest.class);
 

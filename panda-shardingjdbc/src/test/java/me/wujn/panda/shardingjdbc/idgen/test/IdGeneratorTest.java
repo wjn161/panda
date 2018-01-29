@@ -5,6 +5,7 @@
 package me.wujn.panda.shardingjdbc.idgen.test;
 
 import me.wujn.panda.shardingjdbc.idgen.IdGenerator;
+import me.wujn.panda.shardingjdbc.idgen.repository.WorkerNodeRepository;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -23,13 +24,15 @@ import java.util.concurrent.atomic.AtomicInteger;
  * @version $Id IdGeneratorTest.java, v 0.1 2018-01-24 14:11 wujn Exp $$
  */
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration("classpath:spring/spring-context.xml")
+@ContextConfiguration("classpath:spring/spring.xml")
 public class IdGeneratorTest {
 
     @Autowired
     private IdGenerator idGenerator;
 
-    private static final int SIZE = 1000000;
+    @Autowired
+    private WorkerNodeRepository workerNodeRepository;
+    private static final int SIZE = 100;
 
     @Test
     public void testNextId() throws InterruptedException {
@@ -72,5 +75,9 @@ public class IdGeneratorTest {
     private void checkUniqueID(Set<Long> uidSet) {
         System.out.println(uidSet.size());
         Assert.assertEquals(SIZE, uidSet.size());
+    }
+    @Test
+    public void testRepo() throws Exception {
+        workerNodeRepository.get("tt","121");
     }
 }
