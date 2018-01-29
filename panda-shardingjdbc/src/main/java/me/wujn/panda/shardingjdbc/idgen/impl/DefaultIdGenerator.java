@@ -38,6 +38,7 @@ import java.util.concurrent.TimeUnit;
  * | 1bit |     40bits    |   12bits  |  11bits  |
  * +------+----------------------+----------------
  * }</pre>
+ * snowflake details:https://segmentfault.com/a/1190000011282426
  *
  * @author wujn
  * @version $Id DefaultIdGenerator.java, v 0.1 2018-01-19 13:49 wujn Exp $$
@@ -108,6 +109,7 @@ public class DefaultIdGenerator implements IdGenerator, InitializingBean {
     public void afterPropertiesSet() throws Exception {
         bitsAllocator = new BitsAllocator(timeBits, workerBits, seqBits);
         workerId = workerIdAssigner.assignWorkerId();
+        LOGGER.info("worker id is {}", workerId);
         if (workerId > bitsAllocator.getMaxWorkerId()) {
             throw new IdGenerateException(MessageFormat.format("worker id is illegal,workerid={0},max workerId={1}",
                     workerId, bitsAllocator.getMaxWorkerId()));

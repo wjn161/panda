@@ -21,10 +21,25 @@ import java.util.Date;
  */
 @Service
 public class ReuseableWorkerIdAssigner implements WorkerIdAssigner {
+
     private static final Logger LOGGER = LoggerFactory.getLogger(ReuseableWorkerIdAssigner.class);
+
     @Autowired
     private WorkerNodeRepository workerNodeRepository;
 
+    /**
+     * enable the file cache when get worker id from zookeeper
+     */
+    private Boolean enableFileCache;
+
+    /**
+     * config the file path for the local worker id
+     */
+    private String fileCachePath;
+
+    /**
+     * default worker id
+     */
     private static final Long DEFAULT_WORKER_ID = 1L;
     /**
      * if a worker node only deployed one application, the application name can be empty.
@@ -34,11 +49,8 @@ public class ReuseableWorkerIdAssigner implements WorkerIdAssigner {
 
     @Override
     public long assignWorkerId() {
+        String ipAddress = NetUtils.getLocalAddress();
         try {
-            String ipAddress = NetUtils.getLocalAddress();
-            if (StringUtils.isBlank(appName)) {
-                appName = "default-app";
-            }
             WorkerNode workerNode = workerNodeRepository.get(ipAddress, appName);
             if (workerNode == null) {
                 //insert a new worker node
@@ -52,7 +64,7 @@ public class ReuseableWorkerIdAssigner implements WorkerIdAssigner {
             }
             return workerNode.getWorkerId();
         } catch (Exception ex) {
-            LOGGER.error("worker id assign error", ex);
+            LOGGER.error("assign worker id error : " + ex.getMessage(), ex);
             return 0L;
         }
     }
@@ -63,6 +75,10 @@ public class ReuseableWorkerIdAssigner implements WorkerIdAssigner {
      * @param appName value to be assigned to property appName
      */
     public void setAppName(String appName) {
-        this.appName = appName;
+        if (StringUtils.isBlank(appName)) {
+            this.appName = "default-app";
+        } else {
+            this.appName = appName;
+        }
     }
 }

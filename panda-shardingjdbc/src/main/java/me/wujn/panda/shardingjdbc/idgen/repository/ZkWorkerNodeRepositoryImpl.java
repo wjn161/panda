@@ -4,6 +4,7 @@
  */
 package me.wujn.panda.shardingjdbc.idgen.repository;
 
+import me.wujn.panda.shardingjdbc.idgen.cache.FileCache;
 import me.wujn.panda.shardingjdbc.idgen.utils.JavaSerializer;
 import me.wujn.panda.shardingjdbc.idgen.utils.NetUtils;
 import org.apache.curator.framework.CuratorFramework;
@@ -15,17 +16,21 @@ import org.apache.zookeeper.CreateMode;
 import org.apache.zookeeper.data.Stat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Service;
 
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
+import static me.wujn.panda.shardingjdbc.idgen.utils.Constants.CACHE_FILE_PATH;
+
 /**
  * @author wujn
  * @version $Id ZkWorkerNodeRepositoryImpl.java, v 0.1 2018-01-24 16:58 wujn Exp $$
  */
-
+@Service
+@FileCache(path = CACHE_FILE_PATH)
 public class ZkWorkerNodeRepositoryImpl implements WorkerNodeRepository {
 
     /**
@@ -36,6 +41,9 @@ public class ZkWorkerNodeRepositoryImpl implements WorkerNodeRepository {
      * zookeeper base path
      */
     private static final String ZK_PATH = "/idgen/workerid";
+    /**
+     * zookeeper lock path
+     */
     private static final String ZK_LOCK_PATH = ZK_PATH + "/locker";
     /**
      * zookeeper connect retry times
@@ -46,7 +54,7 @@ public class ZkWorkerNodeRepositoryImpl implements WorkerNodeRepository {
      */
     private String zookeeperAddress;
 
-    @SuppressWarnings("all")
+    @SuppressWarnings("unchecked")
     @Override
     public void insert(WorkerNode workerNode) throws Exception {
         CuratorFramework zkClient = null;
@@ -112,7 +120,7 @@ public class ZkWorkerNodeRepositoryImpl implements WorkerNodeRepository {
         }
     }
 
-    @SuppressWarnings("all")
+    @SuppressWarnings("unchecked")
     @Override
     public WorkerNode get(String hostName, String appName) throws Exception {
         CuratorFramework zkClient = null;
