@@ -2,11 +2,11 @@
  * Zentech-Inc
  * Copyright (C) 2018 All Rights Reserved.
  */
-package me.wujn.panda.shardingjdbc.idgen.repository;
+package me.wujn.panda.shardingjdbc.idgen.worker.repos;
 
-import me.wujn.panda.shardingjdbc.idgen.cache.FileCache;
 import me.wujn.panda.shardingjdbc.idgen.utils.JavaSerializer;
 import me.wujn.panda.shardingjdbc.idgen.utils.NetUtils;
+import me.wujn.panda.shardingjdbc.idgen.worker.WorkerNode;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
 import org.apache.curator.framework.imps.CuratorFrameworkState;
@@ -23,14 +23,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-import static me.wujn.panda.shardingjdbc.idgen.utils.Constants.CACHE_FILE_PATH;
-
 /**
  * @author wujn
  * @version $Id ZkWorkerNodeRepositoryImpl.java, v 0.1 2018-01-24 16:58 wujn Exp $$
  */
 @Service
-public class ZkWorkerNodeRepositoryImpl implements WorkerNodeRepository {
+public class ZkWorkerNodeRepositoryImpl extends BaseWorkerNodeRepository {
 
     /**
      * logger
@@ -60,7 +58,7 @@ public class ZkWorkerNodeRepositoryImpl implements WorkerNodeRepository {
         try {
             zkClient = CuratorFrameworkFactory.newClient(
                     zookeeperAddress,
-                    30000,
+                    10000,
                     5000,
                     new RetryNTimes(ZK_RETRY_TIME, 1000)
             );
@@ -119,7 +117,6 @@ public class ZkWorkerNodeRepositoryImpl implements WorkerNodeRepository {
         }
     }
 
-    @FileCache
     @SuppressWarnings("unchecked")
     @Override
     public WorkerNode get(String hostName, String appName) throws Exception {
@@ -127,7 +124,7 @@ public class ZkWorkerNodeRepositoryImpl implements WorkerNodeRepository {
         try {
             zkClient = CuratorFrameworkFactory.newClient(
                     zookeeperAddress,
-                    30000,
+                    10000,
                     5000,
                     new RetryNTimes(ZK_RETRY_TIME, 1000)
             );

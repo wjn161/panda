@@ -8,8 +8,8 @@
     <description>Spring Configuration</description>
     <aop:aspectj-autoproxy proxy-target-class="true"/>
     <context:component-scan base-package="me.wujn.panda.shardingjdbc.idgen"/>
-    <bean class="me.wujn.panda.shardingjdbc.idgen.repository.ZkWorkerNodeRepositoryImpl" id="workerNodeRepository">
-        <property name="zookeeperAddress" value="127.0.0.1:2181"/>
+    <bean class="me.wujn.panda.shardingjdbc.idgen.worker.repos.ZkWorkerNodeRepositoryImpl" id="workerNodeRepository">
+        <property name="zookeeperAddress" value="10.0.1.152:2181"/>
     </bean>
     <bean class="me.wujn.panda.shardingjdbc.idgen.worker.ReuseableWorkerIdAssigner" id="workerIdAssigner">
         <property name="appName" value="panda"/>

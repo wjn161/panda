@@ -5,7 +5,7 @@
 package me.wujn.panda.shardingjdbc.idgen.test;
 
 import me.wujn.panda.shardingjdbc.idgen.IdGenerator;
-import me.wujn.panda.shardingjdbc.idgen.repository.WorkerNodeRepository;
+import me.wujn.panda.shardingjdbc.idgen.worker.repos.WorkerNodeRepository;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -75,9 +75,5 @@ public class IdGeneratorTest {
     private void checkUniqueID(Set<Long> uidSet) {
         System.out.println(uidSet.size());
         Assert.assertEquals(SIZE, uidSet.size());
-    }
-    @Test
-    public void testRepo() throws Exception {
-        workerNodeRepository.get("tt","121");
     }
 }

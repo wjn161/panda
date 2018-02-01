@@ -4,16 +4,14 @@
  */
 package me.wujn.panda.shardingjdbc.idgen.worker;
 
-import me.wujn.panda.shardingjdbc.idgen.repository.WorkerNode;
-import me.wujn.panda.shardingjdbc.idgen.repository.WorkerNodeRepository;
+import me.wujn.panda.shardingjdbc.idgen.exception.WorkerIdAssignException;
 import me.wujn.panda.shardingjdbc.idgen.utils.NetUtils;
+import me.wujn.panda.shardingjdbc.idgen.worker.repos.WorkerNodeRepository;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
-import java.util.Date;
 
 /**
  * @author wujn
@@ -21,15 +19,10 @@ import java.util.Date;
  */
 @Service
 public class ReuseableWorkerIdAssigner implements WorkerIdAssigner {
-
     private static final Logger LOGGER = LoggerFactory.getLogger(ReuseableWorkerIdAssigner.class);
 
     @Autowired
     private WorkerNodeRepository workerNodeRepository;
-    /**
-     * default worker id
-     */
-    private static final Long DEFAULT_WORKER_ID = 1L;
     /**
      * if a worker node only deployed one application, the application name can be empty.
      * otherwise a worker node deployed multi-application,the app name is necessary.
@@ -39,23 +32,10 @@ public class ReuseableWorkerIdAssigner implements WorkerIdAssigner {
     @Override
     public long assignWorkerId() {
         String ipAddress = NetUtils.getLocalAddress();
-        try {
-            WorkerNode workerNode = workerNodeRepository.get(ipAddress, appName);
-            if (workerNode == null) {
-                //insert a new worker node
-                workerNode = new WorkerNode();
-                workerNode.setAppName(appName);
-                workerNode.setCreated(new Date());
-                workerNode.setModified(new Date());
-                workerNode.setHostName(ipAddress);
-                workerNode.setWorkerId(DEFAULT_WORKER_ID);
-                workerNodeRepository.insert(workerNode);
-            }
-            return workerNode.getWorkerId();
-        } catch (Exception ex) {
-            LOGGER.error("assign worker id error : " + ex.getMessage(), ex);
-            return 0L;
+        if (StringUtils.isBlank(ipAddress)) {
+            throw new WorkerIdAssignException("ipaddress is not valid " + ipAddress);
         }
+        return workerNodeRepository.assignWorkerId(ipAddress, appName);
     }
 
     /**

@@ -2,7 +2,7 @@
  * Zentech-Inc
  * Copyright (C) 2018 All Rights Reserved.
  */
-package me.wujn.panda.shardingjdbc.idgen.repository;
+package me.wujn.panda.shardingjdbc.idgen.worker;
 
 import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
