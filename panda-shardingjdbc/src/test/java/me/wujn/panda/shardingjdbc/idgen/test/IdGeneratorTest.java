@@ -32,15 +32,15 @@ public class IdGeneratorTest {
 
     @Autowired
     private WorkerNodeRepository workerNodeRepository;
-    private static final int SIZE = 100;
+    private static final int SIZE = 1000000;
 
     @Test
     public void testNextId() throws InterruptedException {
         AtomicInteger control = new AtomicInteger(-1);
-        Set<Long> uidSet = new ConcurrentSkipListSet<>();
+        Set<String> uidSet = new ConcurrentSkipListSet<>();
         // Initialize threads
         List<Thread> threadList = new ArrayList<>(8);
-        for (int i = 0; i < 8; i++) {
+        for (int i = 0; i < 64; i++) {
             Thread thread = new Thread(() -> workerRun(uidSet, control));
             thread.setName("UID-generator-" + i);
             threadList.add(thread);
@@ -56,7 +56,7 @@ public class IdGeneratorTest {
         checkUniqueID(uidSet);
     }
 
-    private void workerRun(Set<Long> uidSet, AtomicInteger control) {
+    private void workerRun(Set<String> uidSet, AtomicInteger control) {
         for (; ; ) {
             int myPosition = control.updateAndGet(old -> (old == SIZE ? SIZE : old + 1));
             if (myPosition == SIZE) {
@@ -66,13 +66,13 @@ public class IdGeneratorTest {
         }
     }
 
-    private void doGenerate(Set<Long> uidSet, int index) {
-        Long uid = idGenerator.getId();
+    private void doGenerate(Set<String> uidSet, int index) {
+        String uid = idGenerator.getStrId("00000");
         System.out.println(uid);
         uidSet.add(uid);
     }
 
-    private void checkUniqueID(Set<Long> uidSet) {
+    private void checkUniqueID(Set<String> uidSet) {
         System.out.println(uidSet.size());
         Assert.assertEquals(SIZE, uidSet.size());
     }

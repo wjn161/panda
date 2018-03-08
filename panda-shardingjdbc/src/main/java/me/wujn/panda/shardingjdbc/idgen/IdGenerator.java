@@ -27,4 +27,13 @@ public interface IdGenerator {
      * @return Parsed info
      */
     String parseId(long uid);
+
+    /**
+     * get str id
+     *
+     * @param exData
+     * @return
+     * @throws IdGenerateException
+     */
+    String getStrId(String exData) throws IdGenerateException;
 }

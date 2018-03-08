@@ -13,6 +13,7 @@ import me.wujn.panda.shardingjdbc.idgen.worker.ReuseableWorkerIdAssigner;
 import me.wujn.panda.shardingjdbc.idgen.worker.WorkerIdAssigner;
 import org.apache.commons.lang3.RandomUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.time.DateFormatUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
@@ -72,6 +73,12 @@ public class DefaultIdGenerator implements IdGenerator, InitializingBean {
     protected long lastSecond = -1L;
 
     /**
+     * string id settings
+     */
+    protected short sequenceLength = 4;
+    protected short workerIdLength = 4;
+    protected short customerDataLength = 5;
+    /**
      * Spring property
      */
     protected WorkerIdAssigner workerIdAssigner;
@@ -106,6 +113,16 @@ public class DefaultIdGenerator implements IdGenerator, InitializingBean {
     }
 
     @Override
+    public String getStrId(String exData) throws IdGenerateException {
+        try {
+            return nextStrId(exData);
+        } catch (Exception e) {
+            LOGGER.error("Generate unique id exception. ", e);
+            throw new IdGenerateException(e);
+        }
+    }
+
+    @Override
     public void afterPropertiesSet() throws Exception {
         bitsAllocator = new BitsAllocator(timeBits, workerBits, seqBits);
         workerId = workerIdAssigner.assignWorkerId();
@@ -131,13 +148,43 @@ public class DefaultIdGenerator implements IdGenerator, InitializingBean {
             if (sequence == 0) {
                 currentMillSeconds = getNextMillSeconds(lastSecond);
             }
-            // At the different millsecond, sequence restart from a random number betwenn 0 from 9
+            // At the different millsecond, sequence restart from a random number between 0 from 9
         } else {
             sequence = RandomUtils.nextLong(0, 9);
         }
         lastSecond = currentMillSeconds;
         // Allocate bits for ID
         return bitsAllocator.allocate(currentMillSeconds - epochSeconds, workerId, sequence);
+    }
+
+    private synchronized String nextStrId(String exData) {
+        //check exData length
+        if (StringUtils.isBlank(exData) || exData.length() != customerDataLength) {
+            throw new IllegalArgumentException("exData's length must be 4");
+        }
+        long currentMillSeconds = getCurrentMillSeconds();
+        // Clock moved backwards, refuse to generate uid
+        if (currentMillSeconds < lastSecond) {
+            long refusedSeconds = lastSecond - currentMillSeconds;
+            throw new IdGenerateException("Clock moved backwards. Refusing for %d seconds", refusedSeconds);
+        }
+        // At the same second, increase sequence
+        if (currentMillSeconds == lastSecond) {
+            sequence = (sequence + 1) & bitsAllocator.getMaxSequence();
+            // Exceed the max sequence, we wait the next second to generate uid
+            if (sequence == 0) {
+                currentMillSeconds = getNextMillSeconds(lastSecond);
+            }
+            // At the different millsecond, sequence restart from a random number betwenn 0 from 9
+        } else {
+            sequence = RandomUtils.nextLong(0, 9);
+        }
+        lastSecond = currentMillSeconds;
+        // Allocate bits for ID
+        return DateFormatUtils.format(currentMillSeconds, "yyyyMMddHHmmssSSS")
+                + exData
+                + StringUtils.leftPad(String.valueOf(workerId), workerIdLength, '0')
+                + StringUtils.leftPad(String.valueOf(sequence), sequenceLength, '0');
     }
 
     private long getCurrentMillSeconds() {
@@ -206,4 +253,30 @@ public class DefaultIdGenerator implements IdGenerator, InitializingBean {
         }
     }
 
+    /**
+     * Setter method for property <tt>sequenceLength</tt>.
+     *
+     * @param sequenceLength value to be assigned to property sequenceLength
+     */
+    public void setSequenceLength(short sequenceLength) {
+        this.sequenceLength = sequenceLength;
+    }
+
+    /**
+     * Setter method for property <tt>workerIdLength</tt>.
+     *
+     * @param workerIdLength value to be assigned to property workerIdLength
+     */
+    public void setWorkerIdLength(short workerIdLength) {
+        this.workerIdLength = workerIdLength;
+    }
+
+    /**
+     * Setter method for property <tt>customerDataLength</tt>.
+     *
+     * @param customerDataLength value to be assigned to property customerDataLength
+     */
+    public void setCustomerDataLength(short customerDataLength) {
+        this.customerDataLength = customerDataLength;
+    }
 }
