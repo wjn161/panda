@@ -112,6 +112,13 @@ public class DefaultIdGenerator implements IdGenerator, InitializingBean {
                 id, thatTimeStr, workerId, sequence);
     }
 
+    /**
+     * generate a string id
+     *
+     * @param exData customer data code in string id,length must be 5
+     * @return string id length by 30
+     * @throws IdGenerateException
+     */
     @Override
     public String getStrId(String exData) throws IdGenerateException {
         try {
